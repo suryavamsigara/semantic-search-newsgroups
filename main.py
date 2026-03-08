@@ -9,9 +9,6 @@ from semantic_cache import SemanticCache
 from clustering import run_fuzzy_clustering
 from contextlib import asynccontextmanager
 
-app = FastAPI(title="Semantic Search")
-cache = SemanticCache(similarity_threshold=0.90)
-
 # Global variables for our models and data
 encoder = None
 pca_model = None
@@ -42,7 +39,7 @@ async def lifespan(app: FastAPI):
     print("Shutting down Semantic Search API...")
     cache.flush()
 
-app = FastAPI(title="Semantic Search & Caching API", lifespan=lifespan)
+app = FastAPI(title="Semantic Search", lifespan=lifespan)
 
 class QueryRequest(BaseModel):
     query: str
@@ -79,6 +76,7 @@ def process_query(req: QueryRequest):
     similarities = cosine_similarity(query_emb, corpus_embeddings)[0]
     best_match_idx = np.argmax(similarities)
     best_document = corpus_metadata[best_match_idx]["text"]
+    best_score = float(similarities[best_match_idx])
     
     # Store in cache
     cache.put(query_text, query_emb, best_document, dominant_cluster)
@@ -87,8 +85,8 @@ def process_query(req: QueryRequest):
         "query": query_text,
         "cache_hit": False,
         "matched_query": None,
-        "similarity_score": None,
-        "result": best_document[:500] + "...",
+        "similarity_score": best_score,
+        "result": best_document,
         "dominant_cluster": dominant_cluster
     }
 

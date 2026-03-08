@@ -8,5 +8,6 @@ wheels/
 
 # Virtual environments
 .venv
-uv.lock
 .python-version
+20_newsgroups.tar.gz:Zone.Identifier
+20_newsgroups.tar.gz
