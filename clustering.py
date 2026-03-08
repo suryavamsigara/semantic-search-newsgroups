@@ -65,8 +65,8 @@ def run_fuzzy_clustering(emb_dir, temperature=6.0):
     print(f"Boundary Documents: {len(boundary_indices)}")
     print(f"Highly Uncertain Documents: {len(uncertain_indices)}\n")
 
-    if len(boundary_indices) > 0:
-        example_idx = boundary_indices[0]
+    if len(boundary_indices) > 1:
+        example_idx = boundary_indices[1]
         top_2_clusters = np.argsort(distributions[example_idx])[-2:][::-1]
         
         print("--- Example Boundary Case ---")
