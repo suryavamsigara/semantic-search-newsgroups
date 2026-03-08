@@ -1,0 +1,3 @@
+### 1. The Vector Store: In-Memory NumPy
+Instead of pulling in a heavy, dedicated vector database (like Chroma) this system uses **NumPy arrays** (`.npy`) loaded directly into memory. 
+* **Justification:** The cleaned corpus yields ~19,700 documents. When encoded with `all-MiniLM-L6-v2` (384 dimensions), the entire vector space occupies roughly ~30MB of RAM. Performing vectorized cosine similarity across a 30MB array via `numpy.dot` takes single-digit milliseconds. Introducing a dedicated vector database would add unnecessary network latency, serialization overhead, and architectural bloat to what is required to be a "lightweight" system. This structure also seamlessly feeds into the downstream PCA and Gaussian Mixture Model pipelines.
