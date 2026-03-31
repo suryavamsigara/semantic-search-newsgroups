@@ -15,7 +15,7 @@ pca_model = None
 gmm_model = None
 corpus_embeddings = None
 corpus_metadata = None
-TEMPERATURE = 6.0
+TEMPERATURE = 7.0
 cache = SemanticCache(similarity_threshold=0.90)
 
 @asynccontextmanager
