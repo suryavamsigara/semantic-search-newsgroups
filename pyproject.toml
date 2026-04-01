@@ -6,7 +6,9 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "chromadb>=1.5.2",
+    "faiss-cpu>=1.13.2",
     "fastapi>=0.135.1",
+    "huggingface-hub>=1.6.0",
     "matplotlib>=3.10.8",
     "numpy>=2.4.2",
     "scikit-learn>=1.8.0",

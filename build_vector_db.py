@@ -4,6 +4,10 @@ import numpy as np
 from typing import List, Dict, Optional
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
+from transformers import logging
+import faiss
+
+logging.set_verbosity_error()
 
 class SemanticSearch:
     def __init__(self, tar_path: str, model_name='all-MiniLM-L6-v2', max_docs: Optional[int] = None):
@@ -16,6 +20,7 @@ class SemanticSearch:
         self.index = None
 
         self._load_and_process()
+        self._create_index()
 
     def clean_text(self, raw_bytes: bytes) -> str:
         try:
@@ -133,9 +138,61 @@ class SemanticSearch:
                             'full_path': member.name
                         })
         print(f"Loaded {len(self.documents)} documents.")
+    
+    def _create_index(self):
+        """Create Faiss index from document embeddings"""
+        print("\nGenerating embeddings...")
+
+        texts = [doc['text'] for doc in self.documents]
+        embedding_list = []
+
+        batch_size = 32
+        for i in tqdm(range(0, len(texts), batch_size), desc="Creating embeddings"):
+            batch = texts[i:i+batch_size]
+            batch_embeddings = self.model.encode(batch, show_progress_bar=False)
+            embedding_list.append(batch_embeddings)
+        
+        # Combine all embeddings
+        self.embeddings = np.vstack(embedding_list).astype('float32')
+
+        # Normalize for cosine similarity
+        faiss.normalize_L2(self.embeddings)
+
+        # Create FAISS index
+        dimension = self.embeddings.shape[1]
+        self.index = faiss.IndexFlatIP(dimension)
+        self.index.add(self.embeddings)
+
+        print(f"✅ FAISS index created with {self.index.ntotal} vectors")
+        print(f"Embedding dimension: {dimension}")
+
+    def search(self, query: str, k: int = 5):
+        query_embedding = self.model.encode([query]).astype('float32')
+        faiss.normalize_L2(query_embedding)
+
+        scores, indices = self.index.search(query_embedding, min(k, len(self.documents)))
+
+        results = []
+
+        for score, idx in zip(scores[0], indices[0]):
+            doc = self.documents[idx]
+
+            results.append({
+                'rank': len(results) + 1,
+                'score': float(score),
+                'text': doc['text'],
+                'category': doc['category'],
+                'filename': doc['filename']
+            })
+
+            if len(results) >= k:
+                break
+        
+        return results
+
 
 if __name__ == "__main__":
     TAR_FILE_PATH = "20_newsgroups.tar.gz"
-    search = SemanticSearch(tar_path=TAR_FILE_PATH, max_docs=200)
-    search._load_and_process()
-    print(search.documents[2])
+    search = SemanticSearch(tar_path=TAR_FILE_PATH, max_docs=200, model_name='BAAI/bge-small-en-v1.5')
+    
+    print(search.search("Not that religion warrants belief, but the belief carries with it some psychological benefits."))
