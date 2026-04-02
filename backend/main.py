@@ -3,7 +3,6 @@ from fastapi import FastAPI, Request, Depends
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from build_vector_db import SemanticSearch
-from pydantic import BaseModel
 
 class SearchRequest(BaseModel):
     query: str
