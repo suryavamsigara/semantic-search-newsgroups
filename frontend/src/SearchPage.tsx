@@ -34,9 +34,26 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-gray-950 text-white p-8 font-sans">
-      
+
+      <div className="fixed top-0 left-0 right-0 bg-gray-950/80 backdrop-blur-xl border-b border-gray-800 z-50">
+        <div className="max-w-screen-2xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-x-3">
+            <div>
+              <span className="font-semibold text-2xl tracking-tighter">Semantic Search</span>
+              <span className="text-xs text-gray-500 ml-2 font-mono">20 NEWGROUPS</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-x-8 text-sm">
+            <div className="px-4 py-1.5 bg-gray-900 rounded-2xl flex items-center gap-x-2 text-gray-400">
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+              18,846 documents • 384-dim embeddings
+            </div>
+          </div>
+        </div>
+      </div>
+            
       {/* Search Bar - Center or Top depending on state */}
-      <div className={`transition-all duration-500 max-w-2xl mx-auto ${topResult ? 'mb-12' : 'mt-48'}`}>
+      <div className={`transition-all duration-500 max-w-2xl mx-auto ${topResult ? 'mb-12 mt-20' : 'min-h-screen flex items-center'}`}>
         <input 
           type="text" 
           className="w-full bg-gray-900 border border-gray-800 rounded-xl px-6 py-4 text-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-2xl"
@@ -79,41 +96,43 @@ export default function SearchPage() {
 
       {/* The "Explore More" Section */}
       {results.length > 1 && (
-        <div className="max-w-3xl mx-auto mt-16 border-t border-gray-800 pt-8 animate-fade-in">
-          
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-gray-400 font-medium">More Results</h3>
+        <div className="w-full mt-16 xl:mt-0 xl:fixed xl:right-8 xl:top-24 xl:w-80 xl:h-[calc(100vh-6rem)] xl:overflow-y-auto pb-12">
+          <div className="max-w-3xl mx-auto mt-16 border-t border-gray-800 pt-8 animate-fade-in">
             
-            {/* Horizontal Filter Row */}
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setActiveCategory(null)}
-                className={`px-3 py-1 text-sm rounded-full ${!activeCategory ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
-              >
-                All
-              </button>
-              {categories.map(cat => (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-gray-400 font-medium">More Results</h3>
+              
+              {/* Horizontal Filter Row */}
+              <div className="flex gap-2">
                 <button 
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1 text-sm rounded-full ${activeCategory === cat ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                  onClick={() => setActiveCategory(null)}
+                  className={`px-3 py-1 text-sm rounded-full ${!activeCategory ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
                 >
-                  {cat}
+                  All
                 </button>
+                {categories.map(cat => (
+                  <button 
+                    key={cat}
+                    onClick={() => setActiveCategory(cat)}
+                    className={`px-3 py-1 text-sm rounded-full ${activeCategory === cat ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* List of remaining results */}
+            <div className="space-y-4">
+              {otherResults.map(res => (
+                <div key={res.filename} className="p-4 bg-gray-900/50 border border-gray-800/50 rounded-xl hover:bg-gray-800 transition-colors cursor-pointer flex gap-4">
+                  <div className="flex-shrink-0 text-gray-500 font-mono text-sm mt-1">{res.category}</div>
+                  <p className="text-gray-400 line-clamp-2 text-sm">{res.text}</p>
+                </div>
               ))}
             </div>
-          </div>
 
-          {/* List of remaining results */}
-          <div className="space-y-4">
-            {otherResults.map(res => (
-              <div key={res.filename} className="p-4 bg-gray-900/50 border border-gray-800/50 rounded-xl hover:bg-gray-800 transition-colors cursor-pointer flex gap-4">
-                 <div className="flex-shrink-0 text-gray-500 font-mono text-sm mt-1">{res.category}</div>
-                 <p className="text-gray-400 line-clamp-2 text-sm">{res.text}</p>
-              </div>
-            ))}
           </div>
-
         </div>
       )}
     </div>
