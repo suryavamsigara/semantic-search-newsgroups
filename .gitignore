@@ -11,3 +11,6 @@ wheels/
 .python-version
 20_newsgroups.tar.gz:Zone.Identifier
 20_newsgroups.tar.gz
+
+db
+test.py

@@ -1,5 +1,6 @@
 import re
 import tarfile
+import pickle
 import numpy as np
 from typing import List, Dict, Optional
 from sentence_transformers import SentenceTransformer
@@ -19,8 +20,9 @@ class SemanticSearch:
         self.embeddings = None
         self.index = None
 
-        self._load_and_process()
-        self._create_index()
+        # self._load_and_process()
+        # self._create_index()
+        # self.save("db")
 
     def clean_text(self, raw_bytes: bytes) -> str:
         try:
@@ -146,7 +148,7 @@ class SemanticSearch:
         texts = [doc['text'] for doc in self.documents]
         embedding_list = []
 
-        batch_size = 32
+        batch_size = 64
         for i in tqdm(range(0, len(texts), batch_size), desc="Creating embeddings"):
             batch = texts[i:i+batch_size]
             batch_embeddings = self.model.encode(batch, show_progress_bar=False)
@@ -165,6 +167,33 @@ class SemanticSearch:
 
         print(f"✅ FAISS index created with {self.index.ntotal} vectors")
         print(f"Embedding dimension: {dimension}")
+
+    def save(self, path: str):
+        """Save index and metadata"""
+        faiss.write_index(self.index, f"{path}/index.faiss")
+
+        with open(f"{path}/metadata.pkl", "wb") as f:
+            pickle.dump({
+                'num_documents': len(self.documents),
+                'model_name': 'all-MiniLM-L6-v2'
+            }, f)
+
+        with open(f"{path}/documents.pkl", "wb") as f:
+            pickle.dump(self.documents, f)
+        
+        print(f"✅ Saved to {path}")
+
+    def load(self, path: str):
+        self.index = faiss.read_index(f"{path}/index.faiss")
+
+        with open(f"{path}/metadata.pkl", "rb") as f:
+            metadata = pickle.load(f)
+            print(f"Loaded index built with: {metadata['model_name']}")
+        
+        with open(f"{path}/documents.pkl", "rb") as f:
+            self.documents = pickle.load(f)
+        
+        print(f"✅ Successfully loaded {len(self.documents)} documents from {path}")
 
     def search(self, query: str, k: int = 5):
         query_embedding = self.model.encode([query]).astype('float32')
@@ -195,4 +224,4 @@ if __name__ == "__main__":
     TAR_FILE_PATH = "20_newsgroups.tar.gz"
     search = SemanticSearch(tar_path=TAR_FILE_PATH, max_docs=200, model_name='BAAI/bge-small-en-v1.5')
     
-    print(search.search("Not that religion warrants belief, but the belief carries with it some psychological benefits."))
+    # print(search.search("Not that religion warrants belief, but the belief carries with it some psychological benefits."))
