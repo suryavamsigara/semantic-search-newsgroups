@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useQuery } from '@tanstack/react-query';
 import type { SearchResult } from "./types";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchPage() {
   const [query, setQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const { data, isLoading } = useQuery({
     queryKey: ['search', query],
@@ -87,7 +89,10 @@ export default function SearchPage() {
                {topResult.text}
              </p>
              
-             <button className="mt-6 text-blue-400 hover:text-blue-300 font-medium transition-colors">
+             <button
+                onClick={() => navigate(`/document/${topResult.filename}`, {state: {doc: topResult}})}
+                className="mt-6 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+              >
                Read Full Document →
              </button>
           </div>
@@ -125,7 +130,9 @@ export default function SearchPage() {
             {/* List of remaining results */}
             <div className="space-y-4">
               {otherResults.map(res => (
-                <div key={res.filename} className="p-4 bg-gray-900/50 border border-gray-800/50 rounded-xl hover:bg-gray-800 transition-colors cursor-pointer flex gap-4">
+                <div key={res.filename} className="p-4 bg-gray-900/50 border border-gray-800/50 rounded-xl hover:bg-gray-800 transition-colors cursor-pointer flex gap-4"
+                  onClick={() => navigate(`/document/${res.filename}`, {state: {doc: topResult}})}
+                >
                   <div className="flex-shrink-0 text-gray-500 font-mono text-sm mt-1">{res.category}</div>
                   <p className="text-gray-400 line-clamp-2 text-sm">{res.text}</p>
                 </div>
