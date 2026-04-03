@@ -11,7 +11,9 @@ dependencies = [
     "huggingface-hub>=1.6.0",
     "matplotlib>=3.10.8",
     "numpy>=2.4.2",
+    "scikit-fuzzy>=0.5.0",
     "scikit-learn>=1.8.0",
     "sentence-transformers>=5.2.3",
     "tqdm>=4.67.3",
+    "umap-learn>=0.5.11",
 ]

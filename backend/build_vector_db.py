@@ -222,6 +222,6 @@ class SemanticSearch:
 
 if __name__ == "__main__":
     TAR_FILE_PATH = "20_newsgroups.tar.gz"
-    search = SemanticSearch(tar_path=TAR_FILE_PATH, max_docs=200, model_name='BAAI/bge-small-en-v1.5')
+    search = SemanticSearch(tar_path=TAR_FILE_PATH, model_name='BAAI/bge-small-en-v1.5')
     
     # print(search.search("Not that religion warrants belief, but the belief carries with it some psychological benefits."))

@@ -38,5 +38,11 @@ def get_search(request: Request):
 async def search_api(body: SearchRequest, search=Depends(get_search)):
     return search.search(body.query)
 
+def getCategories(doc: str, search=Depends(get_search)):
+    documents = search.documents
+    index = next((i for i, d in enumerate(documents) if d.get("filename") == doc), None)
+
+    
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

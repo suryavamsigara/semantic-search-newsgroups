@@ -48,7 +48,7 @@ export default function SearchPage() {
           <div className="flex items-center gap-x-8 text-sm">
             <div className="px-4 py-1.5 bg-gray-900 rounded-2xl flex items-center gap-x-2 text-gray-400">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              18,846 documents • 384-dim embeddings
+              20,000 documents • 384-dim embeddings
             </div>
           </div>
         </div>
