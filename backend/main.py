@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
         print("Calculating FCM clusters (this will take a minute)...")
         clustering.run_fcm()
         clustering.save("db")
-        
+
     app.state.search = search
     app.state.clustering = clustering
 
@@ -52,6 +52,14 @@ def get_clustering(request: Request):
 @app.post("/search")
 async def search_api(body: SearchRequest, search=Depends(get_search)):
     return search.search(body.query)
+
+@app.get("/document/{filename}")
+async def get_document(filename: str, search=Depends(get_search)):
+    doc = next((d for d in search.documents if d.get("filename") == filename), None)
+
+    if doc is None:
+        return {"error": "Document not found"}
+    return doc
 
 @app.post("/categories")
 async def get_categories(doc: DocRequest, search=Depends(get_search), clustering=Depends(get_clustering)):

@@ -18,6 +18,11 @@ export default function SearchPage() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({query})
       });
+
+      if (!res.ok) {
+        throw new Error(`Server responded with status: ${res.status}`);
+      }
+      
       return res.json() as Promise<SearchResult[]>
     },
     enabled: !!query,
@@ -90,7 +95,7 @@ export default function SearchPage() {
              </p>
              
              <button
-                onClick={() => navigate(`/document/${topResult.filename}`, {state: {doc: topResult}})}
+                onClick={() => navigate(`/document/${topResult.filename}`)}
                 className="mt-6 text-blue-400 hover:text-blue-300 font-medium transition-colors"
               >
                Read Full Document →
@@ -131,7 +136,7 @@ export default function SearchPage() {
             <div className="space-y-4">
               {otherResults.map(res => (
                 <div key={res.filename} className="p-4 bg-gray-900/50 border border-gray-800/50 rounded-xl hover:bg-gray-800 transition-colors cursor-pointer flex gap-4"
-                  onClick={() => navigate(`/document/${res.filename}`, {state: {doc: topResult}})}
+                  onClick={() => navigate(`/document/${res.filename}`)}
                 >
                   <div className="flex-shrink-0 text-gray-500 font-mono text-sm mt-1">{res.category}</div>
                   <p className="text-gray-400 line-clamp-2 text-sm">{res.text}</p>
