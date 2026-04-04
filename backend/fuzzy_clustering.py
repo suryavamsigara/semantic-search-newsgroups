@@ -1,4 +1,6 @@
+import os
 import umap
+import pickle
 import skfuzzy as fuzz
 import numpy as np
 from build_vector_db import SemanticSearch
@@ -76,19 +78,51 @@ class FuzzyClustering:
 
             self.cluster_names[cluster_id] = most_common_label
         print("Finished")
+
+    def save(self, path: str):
+        if self.document_memberships is None or not self.cluster_names:
+            print("No clustering data to save. Run run_fcm() first.")
+            return
+        
+        os.makedirs(path, exist_ok=True)
+        np.save(f"{path}/document_memberships.npy", self.document_memberships)
+
+        with open(f"{path}/cluster_names.pkl", "wb") as f:
+            pickle.dump(self.cluster_names, f)
+        print(f"Saved fuzzy clustering data to {path}")
+    
+    def load(self, path: str):
+        try:
+            self.document_memberships = np.load(f"{path}/document_memberships.npy")
+
+            # Load Python dictionary
+            with open(f"{path}/cluster_names.pkl", "rb") as f:
+                self.cluster_names = pickle.load(f)
+                
+            print(f"✅ Successfully loaded fuzzy clustering data from {path}")
+            return True
+        except FileNotFoundError:
+            print(f"Clustering data not found in {path}. Needs calculation.")
+            return False
+
     
     def find_categories(self, index: int):
         document_array = self.document_memberships[index]
 
         top_3_cluster_indices = np.argsort(document_array)[::-1][:3].flatten()
-        return {
-            "clusters": [self.cluster_names.get(c) for c in top_3_cluster_indices]
-        }
+        return [self.cluster_names.get(c) for c in top_3_cluster_indices]
 
 
 if __name__=="__main__":
     search = SemanticSearch(tar_path="")
     search.load("db")
+
     clustering = FuzzyClustering(search)
-    clustering.run_fcm()
+    
+    loaded_successfully = clustering.load("db")
+    
+    # If loading failed, calculate it and save it
+    if not loaded_successfully:
+        clustering.run_fcm()
+        clustering.save("db")
 

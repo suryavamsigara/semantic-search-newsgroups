@@ -17,8 +17,14 @@ async def lifespan(app: FastAPI):
     print("Loading saved index...")
     search = SemanticSearch(tar_path="")
     search.load("db")
+
     clustering = FuzzyClustering(search=search)
-    clustering.run_fcm()
+
+    if not clustering.load("db"):
+        print("Calculating FCM clusters (this will take a minute)...")
+        clustering.run_fcm()
+        clustering.save("db")
+        
     app.state.search = search
     app.state.clustering = clustering
 

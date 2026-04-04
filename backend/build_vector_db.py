@@ -184,16 +184,19 @@ class SemanticSearch:
         print(f"✅ Saved to {path}")
 
     def load(self, path: str):
-        self.index = faiss.read_index(f"{path}/index.faiss")
+        try:
+            self.index = faiss.read_index(f"{path}/index.faiss")
 
-        with open(f"{path}/metadata.pkl", "rb") as f:
-            metadata = pickle.load(f)
-            print(f"Loaded index built with: {metadata['model_name']}")
-        
-        with open(f"{path}/documents.pkl", "rb") as f:
-            self.documents = pickle.load(f)
-        
-        print(f"✅ Successfully loaded {len(self.documents)} documents from {path}")
+            with open(f"{path}/metadata.pkl", "rb") as f:
+                metadata = pickle.load(f)
+                print(f"Loaded index built with: {metadata['model_name']}")
+            
+            with open(f"{path}/documents.pkl", "rb") as f:
+                self.documents = pickle.load(f)
+            
+            print(f"✅ Successfully loaded {len(self.documents)} documents from {path}")
+        except FileNotFoundError:
+            print(f"Data not found in {path}.")
 
     def search(self, query: str, k: int = 5):
         query_embedding = self.model.encode([query]).astype('float32')
