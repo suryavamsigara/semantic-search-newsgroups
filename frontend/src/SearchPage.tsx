@@ -1,12 +1,15 @@
-import { useState } from "react";
 import { useQuery } from '@tanstack/react-query';
 import type { SearchResult } from "./types";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function SearchPage() {
-  const [query, setQuery] = useState('');
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const navigate = useNavigate();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Reading values directly from the URL (e.g., localhost:5173/?q=space)
+  const query = searchParams.get('q') || '';
+  const activeCategory = searchParams.get('category');
 
   const { data, isLoading } = useQuery({
     queryKey: ['search', query],
@@ -65,8 +68,14 @@ export default function SearchPage() {
           type="text" 
           className="w-full bg-gray-900 border border-gray-800 rounded-xl px-6 py-4 text-lg focus:ring-2 focus:ring-blue-500 outline-none shadow-2xl"
           placeholder="Search the 20 newsgroups dataset..."
+          defaultValue={query}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') setQuery(e.currentTarget.value);
+            if (e.key === 'Enter') {
+              setSearchParams(prev => {
+                prev.set('q', e.currentTarget.value);
+                return prev;
+              })
+            }
           }}
         />
       </div>
@@ -115,7 +124,7 @@ export default function SearchPage() {
               {/* Horizontal Filter Row */}
               <div className="flex gap-2">
                 <button 
-                  onClick={() => setActiveCategory(null)}
+                  onClick={() => setSearchParams(prev => {prev.delete('category'); return prev;})}
                   className={`px-3 py-1 text-sm rounded-full ${!activeCategory ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
                 >
                   All
@@ -123,7 +132,7 @@ export default function SearchPage() {
                 {categories.map(cat => (
                   <button 
                     key={cat}
-                    onClick={() => setActiveCategory(cat)}
+                    onClick={() => setSearchParams(prev => {prev.set('category', cat); return prev;})}
                     className={`px-3 py-1 text-sm rounded-full ${activeCategory === cat ? 'bg-white text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
                   >
                     {cat}

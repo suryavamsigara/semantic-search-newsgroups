@@ -1,56 +1,47 @@
-import json
+import faiss
 import numpy as np
-from sklearn.metrics.pairwise import cosine_similarity
+import time
 
 class SemanticCache:
-    def __init__(self, similarity_threshold=0.90):
-        self.threshold = similarity_threshold
-        self.store = {}
-        self.stats = {"total_entries": 0, "hit_count": 0, "miss_count": 0}
+    def __init__(self, model, dimension=384, threshold=0.85, max_size=1000):
+        self.model = model
+        self.threshold = threshold
+        self.max_size = max_size
 
-    def check(self, query_emb, dominant_cluster):
-        if dominant_cluster not in self.store or not self.store[dominant_cluster]:
-            self.stats["miss_count"] += 1
+        self.cache_index = faiss.IndexFlatIP(dimension)
+
+        self.cached_responses = []
+
+    def check(self, query: str):
+        """Returns cached response if a highly similar query exists."""
+
+        if self.cache_index.ntotal == 0:
             return None
-
-        cached_items = self.store[dominant_cluster]
-        cached_embs = np.vstack([item['embedding'] for item in cached_items])
         
-        similarities = cosine_similarity(query_emb, cached_embs)[0]
-        best_idx = np.argmax(similarities)
-        best_score = similarities[best_idx]
+        # Embed the query
+        query_vector = self.model.encode([query]).astype('float32')
+        faiss.normalize_L2(query_vector)
 
-        if best_score >= self.threshold:
-            self.stats["hit_count"] += 1
-            return {
-                "matched_query": cached_items[best_idx]["query"],
-                "similarity_score": float(best_score),
-                "result": cached_items[best_idx]["result"]
-            }
+        #  Search the cache
+        distances, indices = self.cache_index.search(query_vector, k=1)
+
+        similarity = distances[0][0]
+        if similarity >= self.threshold:
+            print(f"Semantic Cache Hit! (Similarity: {similarity:.3f})")
+            cache_id = indices[0][0]
+            return self.cached_responses[cache_id]
         
-        self.stats["miss_count"] += 1
         return None
+    
+    def add(self, query: str, response: dict):
+        """Adds a new query and its response to the cache"""
+        if self.cache_index.ntotal >= self.max_size:
+            print("Cache Full.. Flushing...")
+            self.cache_index.reset()
+            self.cached_responses.clear()
 
-    def put(self, query, query_emb, result, dominant_cluster):
-        if dominant_cluster not in self.store:
-            self.store[dominant_cluster] = []
-        self.store[dominant_cluster].append({
-            "query": query,
-            "embedding": query_emb,
-            "result": result
-        })
-        self.stats["total_entries"] += 1
+        query_vector = self.model.encode([query]).astype('float32')
+        faiss.normalize_L2(query_vector)
 
-    def get_stats(self):
-        total = self.stats["hit_count"] + self.stats["miss_count"]
-        hit_rate = self.stats["hit_count"] / total if total > 0 else 0.0
-        return {
-            "total_entries": self.stats["total_entries"],
-            "hit_count": self.stats["hit_count"],
-            "miss_count": self.stats["miss_count"],
-            "hit_rate": round(hit_rate, 3)
-        }
-
-    def flush(self):
-        self.store.clear()
-        self.stats = {"total_entries": 0, "hit_count": 0, "miss_count": 0}
+        self.cache_index.add(query_vector)
+        self.cached_responses.append(response)

@@ -1,10 +1,11 @@
 import uvicorn
-from fastapi import FastAPI, Request, Depends
+from fastapi import FastAPI, Request, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from build_vector_db import SemanticSearch
 from fuzzy_clustering import FuzzyClustering
+from semantic_cache import SemanticCache
 
 class SearchRequest(BaseModel):
     query: str
@@ -25,8 +26,11 @@ async def lifespan(app: FastAPI):
         clustering.run_fcm()
         clustering.save("db")
 
+    cache = SemanticCache(model=search.model, threshold=0.92, max_size=500)
+
     app.state.search = search
     app.state.clustering = clustering
+    app.state.cache = cache
 
     print("✅ Ready!")
     yield
@@ -49,9 +53,22 @@ def get_search(request: Request):
 def get_clustering(request: Request):
     return request.app.state.clustering
 
+def get_cache(request: Request):
+    return request.app.state.cache
+
 @app.post("/search")
-async def search_api(body: SearchRequest, search=Depends(get_search)):
-    return search.search(body.query)
+async def search_api(body: SearchRequest, response: Response, search=Depends(get_search), cache=Depends(get_cache)):
+    cached_result = cache.check(body.query)
+
+    if cached_result:
+        response.headers["X-Cache-Status"] = "HIT"
+        return cached_result
+    
+    fresh_result = search.search(body.query)
+    cache.add(body.query, fresh_result)
+    
+    response.headers["X-Cache-Status"] = "MISS"
+    return fresh_result
 
 @app.get("/document/{filename}")
 async def get_document(filename: str, search=Depends(get_search)):
