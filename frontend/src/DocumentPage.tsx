@@ -14,7 +14,7 @@ export default function DocumentPage() {
   const { data: doc, isLoading: isDocLoading } = useQuery({
     queryKey: ['document', filename],
     queryFn: async () => {
-      const res = await fetch(`http://localhost:8000/document/${filename}`);
+      const res = await fetch(`https://suryavamsigara-semantic-search-newsgroups.hf.space/document/${filename}`);
       if (!res.ok) throw new Error("Failed to fetch document");
       return res.json() as Promise<SearchResult>
     },
@@ -26,7 +26,7 @@ export default function DocumentPage() {
 
     const fetchCategories = async () => {
       try {
-        const res = await fetch('http://localhost:8000/categories', {
+        const res = await fetch('https://suryavamsigara-semantic-search-newsgroups.hf.space/categories', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({doc: String(doc.filename)})

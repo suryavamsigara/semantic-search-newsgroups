@@ -16,7 +16,7 @@ export default function SearchPage() {
     queryFn: async () => {
       if (!query) return null;
 
-      const res = await fetch('http://localhost:8000/search', {
+      const res = await fetch('https://suryavamsigara-semantic-search-newsgroups.hf.space/search', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({query})

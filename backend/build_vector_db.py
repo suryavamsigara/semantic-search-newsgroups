@@ -11,7 +11,7 @@ import faiss
 logging.set_verbosity_error()
 
 class SemanticSearch:
-    def __init__(self, tar_path: str, model_name='all-MiniLM-L6-v2', max_docs: Optional[int] = None):
+    def __init__(self, tar_path: str, model_name='BAAI/bge-small-en-v1.5', max_docs: Optional[int] = None):
         self.tar_path = tar_path
         self.model = SentenceTransformer(model_name)
         self.max_docs = max_docs

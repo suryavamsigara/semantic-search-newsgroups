@@ -42,7 +42,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -55,6 +55,14 @@ def get_clustering(request: Request):
 
 def get_cache(request: Request):
     return request.app.state.cache
+
+@app.get("/")
+async def root_health_check():
+    return {
+        "status": "online",
+        "message": "Semantic Search API is running perfectly!",
+        "documents_loaded": 19997
+    }
 
 @app.post("/search")
 async def search_api(body: SearchRequest, response: Response, search=Depends(get_search), cache=Depends(get_cache)):
