@@ -1,4 +1,4 @@
-# emantic Search
+# Semantic Search
 
 A full-stack semantic search application built over the 20 Newsgroups dataset. This project moves beyond simple keyword matching (BM25/TF-IDF) by utilizing dense vector embeddings, an in-memory semantic cache, and Fuzzy C-Means clustering to uncover the complex, overlapping semantic relationships between documents.
 
@@ -6,7 +6,7 @@ A full-stack semantic search application built over the 20 Newsgroups dataset. T
 ---
 
 ## Live Demos
-* **Frontend UI (Vercel):** [https://semantic-search-newsgroups.vercel.app](https://semantic-search-newsgroups.vercel.app)
+* **Frontend UI:** [https://semantic-search-newsgroups.vercel.app](https://semantic-search-newsgroups.vercel.app)
 
 ## Key Features
 
